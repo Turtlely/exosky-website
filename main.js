@@ -247,7 +247,7 @@ function addStarBatch(starData) {
 
 async function submitJob(magCutoff, exo_coords) {
     try {
-        const response = await fetch('http://api.exosky.org/create_job', {
+        const response = await fetch('https://api.exosky.org/create_job', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -266,7 +266,7 @@ async function submitJob(magCutoff, exo_coords) {
 }
 
 async function fetchAndProcessData(jobId) {
-    const url = `http://api.exosky.org/get_job/${jobId}`;
+    const url = `https://api.exosky.org/get_job/${jobId}`;
 
     try {
         const response = await fetch(url);
