@@ -15,6 +15,7 @@ const MOVE_SPEED = 0.1;
 let EXOPLANET_ID = "Kepler-1032 b";
 let jobId = null; // Declare the jobId variable outside
 var jobCompleted;
+var rateLimitExceeded;
 const interval = 200;
 let positions = [];
 let GaiaIDs = [];
@@ -37,6 +38,10 @@ initialize();
 document.addEventListener('DOMContentLoaded', () => {
     const exoplanetInput = document.getElementById('dropdown-menu');
     const fetchButton = document.getElementById('fetch-button');
+    let loadingWidget = document.getElementById('loading-widget');
+    let loadingImage = document.getElementById('loading-image');
+    const button = document.getElementById('fetch-button');
+
     fetchButton.addEventListener('click', async () => {
         try {
             // Grab the position of the exoplanet
@@ -53,6 +58,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (jobId == null) return;
 
             jobCompleted = false;
+            rateLimitExceeded = false;
+
+            // Array of loading images
+            const loadingImages = [
+                '/assets/loading_1.gif',
+                '/assets/loading_2.gif',
+                '/assets/loading_3.gif'
+            ];
+
+            // Randomly select an image
+            const randomIndex = Math.floor(Math.random() * loadingImages.length);
+            loadingImage.src = loadingImages[randomIndex];
+
+            loadingWidget.style.display = 'block'; // Show the widget
+            
+            // Disable the button
+            button.disabled = true;
             
             console.log('Job ID:', jobId);
             deleteAllStars();
@@ -60,18 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
             async function pollJobStatus() {
                 try {
                     if (!jobCompleted) {
-                        //console.log("ping!");
 
                         const data = await fetchAndProcessData(jobId);
 
                         // Plot the star(s) in the sky
-                        //console.log("Star data: ", data[0]);
                         addStarBatch(data[0]);
 
                         // Re-call pollJobStatus after a delay if job is not completed
                         setTimeout(pollJobStatus, interval);
-                    } else {
+                    } else if (jobCompleted) {
                         console.log("done!");
+                        loadingWidget.style.display = 'none';
+                    } else if (rateLimitExceeded){
+                        console.log("Slow down! You exceeded the rate limit of 1 request per minute");
                     }
                 } catch (error) {
                     console.error('Error while fetching data:', error);
@@ -80,6 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Start polling for job completion
             pollJobStatus();
+            // Set a timeout to re-enable the button after the rate limit duration
+            setTimeout(() => {
+                button.disabled = false; // Re-enable the button
+            }, 15000);
             
         } catch (error) {
             console.error('An error occurred:', error);
@@ -217,8 +244,6 @@ function addStarBatch(starData) {
         newPositions.push((x / dist) * mult, (y / dist) * mult, (z / dist) * mult);
         // Star color (r, g, b)
         newColors.push(star.r * dfact, star.g * dfact, star.b * dfact);
-        //console.log(star.r,star.g,star.b);
-        //newColors.push(star.r, star.g, star.b);
 
         // Star ID
         newGaiaIDs.push(star.GaiaID);
@@ -246,8 +271,8 @@ function addStarBatch(starData) {
 
 async function submitJob(magCutoff, exo_coords, planet_name) {
     try {
-        const response = await fetch('https://api.exosky.org/create_job', {
-        //const response = await fetch('http://0.0.0.0:8080/create_job', {
+        //const response = await fetch('https://api.exosky.org/create_job', {
+        const response = await fetch('http://0.0.0.0:8080/create_job', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -267,12 +292,18 @@ async function submitJob(magCutoff, exo_coords, planet_name) {
 }
 
 async function fetchAndProcessData(jobId) {
-    const url = `https://api.exosky.org/get_job/${jobId}`;
-    //const url = `http://0.0.0.0:8080/get_job/${jobId}`;
+    //const url = `https://api.exosky.org/get_job/${jobId}`;
+    const url = `http://0.0.0.0:8080/get_job/${jobId}`;
 
     try {
         const response = await fetch(url);
         
+        if (response.status === 429) {
+            console.error("Error 429: Too Many Requests. Please try again later.");
+            rateLimitExceeded = true;
+            return undefined; // Return undefined for 429 error
+        }
+
         const completed_flag = response.headers.get('X-Is-Completed');
 
         if (!response.ok) {
@@ -461,9 +492,6 @@ function onWindowResize() {
     // Update the renderer size
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
-
-
-
 
 // Event listeners
 document.addEventListener('click', handleClickOutside);

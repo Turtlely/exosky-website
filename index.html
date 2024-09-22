@@ -41,7 +41,32 @@
         </div>
 
         <!-- Scene Container -->
-        <div id="scene-container">
+        <div id="scene-container" style="position: relative;">
+            <div id="loading-widget" class="loading-widget">
+                <div class="loading-content">
+                    <h2>Fetching stars...</h2>
+                    <img id="loading-image" src="" alt="Loading..." style="width: 100px; height: 100px;"/>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    let loadingWidget = document.getElementById('loading-widget');
+                    let loadingImage = document.getElementById('loading-image');
+
+                    // Array of loading images
+                    const loadingImages = [
+                        '/assets/loading_1.gif',
+                        '/assets/loading_2.gif',
+                        '/assets/loading_3.gif'
+                    ];
+
+                    // Randomly select an image
+                    const randomIndex = Math.floor(Math.random() * loadingImages.length);
+                    loadingImage.src = loadingImages[randomIndex];
+                });
+            </script>
+
             <!-- Popup Modal -->
             <div id="popupModal" class="modal">
                 <div class="modal-content">
