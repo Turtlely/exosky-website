@@ -14,7 +14,7 @@ const MOVE_SPEED = 0.1;
 // Variables
 let EXOPLANET_ID = "Kepler-1032 b";
 let jobId = null; // Declare the jobId variable outside
-let jobCompleted = false;
+var jobCompleted;
 const interval = 200;
 let positions = [];
 let GaiaIDs = [];
@@ -37,26 +37,25 @@ initialize();
 document.addEventListener('DOMContentLoaded', () => {
     const exoplanetInput = document.getElementById('dropdown-menu');
     const fetchButton = document.getElementById('fetch-button');
-
     fetchButton.addEventListener('click', async () => {
         try {
             // Grab the position of the exoplanet
             const inputValue = searchInput.value.trim();
             const exoplanetPosition = await handleExoplanetInput(inputValue);
-
+            
             // Ensure position is not null
             if (exoplanetPosition == null) return;
-
             // Send the job request, and save the returned job ID
-            jobId = await submitJob(MAG_CUTOFF, exoplanetPosition);
-
+            console.log(inputValue);
+            jobId = await submitJob(MAG_CUTOFF, exoplanetPosition, inputValue);
+            console.log(jobId);
             // Ensure job ID is not null
             if (jobId == null) return;
 
             jobCompleted = false;
             
             console.log('Job ID:', jobId);
-            
+            deleteAllStars();
             // Poll for job completion using setTimeout for async handling
             async function pollJobStatus() {
                 try {
@@ -245,16 +244,18 @@ function addStarBatch(starData) {
     pointsGeometry.computeBoundingSphere();
 }
 
-async function submitJob(magCutoff, exo_coords) {
+async function submitJob(magCutoff, exo_coords, planet_name) {
     try {
         const response = await fetch('https://api.exosky.org/create_job', {
+        //const response = await fetch('http://0.0.0.0:8080/create_job', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 limiting_magnitude: magCutoff,
-                coordinates: exo_coords
+                coordinates: exo_coords,
+                pl_name: planet_name
             }), 
         });
         const responseJSON = await response.json();
@@ -267,6 +268,7 @@ async function submitJob(magCutoff, exo_coords) {
 
 async function fetchAndProcessData(jobId) {
     const url = `https://api.exosky.org/get_job/${jobId}`;
+    //const url = `http://0.0.0.0:8080/get_job/${jobId}`;
 
     try {
         const response = await fetch(url);
@@ -337,6 +339,27 @@ function populateDropdown(data) {
         });
         dropdownMenu.appendChild(menuItem);
     }
+}
+
+function deleteAllStars() {
+    // Clear the arrays
+    positions = [];
+    colors = [];
+    GaiaIDs = [];
+    numericIDs = [];
+    
+    // Update BufferGeometry to reflect the deletion
+    pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    pointsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    pointsGeometry.setAttribute('id', new THREE.Float32BufferAttribute(numericIDs, 1));
+
+    // Inform Three.js that geometry needs to be updated
+    pointsGeometry.attributes.position.needsUpdate = true;
+    pointsGeometry.attributes.color.needsUpdate = true;
+    pointsGeometry.attributes.id.needsUpdate = true;
+    
+    // Optionally compute new bounding sphere if necessary
+    pointsGeometry.computeBoundingSphere();
 }
 
 // Function to filter dropdown items based on search input
@@ -438,6 +461,9 @@ function onWindowResize() {
     // Update the renderer size
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
+
+
 
 // Event listeners
 document.addEventListener('click', handleClickOutside);
