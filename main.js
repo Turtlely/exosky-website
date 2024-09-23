@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const scene = new THREE.Scene();
 
 // Set the background color to black
-scene.background = new THREE.Color(0x0C0C0D); // black
+scene.background = new THREE.Color(0x0a0112);//(0x0C0C0D); // black #0a0112
 
 const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 0, 0);
@@ -221,7 +221,7 @@ scene.add(points);
 // create black render distance sphere
 const sphereGeometry = new THREE.SphereGeometry(R0, 32, 32);
 const sphereMaterial = new THREE.MeshBasicMaterial({
-    color: 0x000000,
+    color: 0x0a0112,
     side: THREE.BackSide, 
 })
 const blackSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -285,8 +285,8 @@ function addStarBatch(starData) {
 
 async function submitJob(magCutoff, exo_coords, planet_name) {
     try {
-        const response = await fetch('https://api.exosky.org/create_job', {
-        //const response = await fetch('http://0.0.0.0:8080/create_job', {
+        //const response = await fetch('https://api.exosky.org/create_job', {
+        const response = await fetch('http://0.0.0.0:8080/create_job', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -306,8 +306,8 @@ async function submitJob(magCutoff, exo_coords, planet_name) {
 }
 
 async function fetchAndProcessData(jobId) {
-    const url = `https://api.exosky.org/get_job/${jobId}`;
-    //const url = `http://0.0.0.0:8080/get_job/${jobId}`;
+    //const url = `https://api.exosky.org/get_job/${jobId}`;
+    const url = `http://0.0.0.0:8080/get_job/${jobId}`;
 
     try {
         const response = await fetch(url);
@@ -445,6 +445,13 @@ function updateSphereSize() {
   blackSphere.scale.set(maxRenderDistance, maxRenderDistance, maxRenderDistance);
   console.log(maxRenderDistance);
 }
+
+// get all stars in view
+// for each star, check if it is within maxRenderDistance
+// from these filtered stars, check which one has the closest angular distance to the cursor
+
+
+
 
 function onMouseWheel(event) {
     camera.fov += event.deltaY * ZOOM_SPEED;
