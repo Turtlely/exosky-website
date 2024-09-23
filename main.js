@@ -5,8 +5,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 
 // Constants
 const MAG_CUTOFF = 8.5;
-const R0 = 100;
-const r_fact = 0.15;
+const R0 = 300;
+const r_fact = 0.035//0.15;
 const BASE_ROTATION_SPEED = 0.001;
 const ZOOM_SPEED = 0.01;
 const MOVE_SPEED = 0.1;
@@ -22,6 +22,7 @@ let GaiaIDs = [];
 let numericIDs = [];
 let colors = [];
 let highestID = 0;
+let maxRenderDistance = 100; // Initial distance cutoff for particles
 
 // Mouse interaction variables
 let isDragging = false;
@@ -134,20 +135,21 @@ composer.addPass(renderScene);
 
 const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5,
     0.1,
-    0.0,
-    0.1
+    0.0
 );
 composer.addPass(bloomPass);
 
-const radius = 100; // Radius of the sphere
+const radius = 5; // Radius of the sphere
 const segments = 16; // Number of meridians and parallels
 
 // Material for the grid lines
 const lineMaterial = new THREE.LineBasicMaterial({
     color: 0xcccccc,  // Light gray color
     transparent: true,
-    opacity: 0.05      // Set the transparency level (0.0 fully transparent, 1.0 fully opaque)
+    opacity: 0.05,      // Set the transparency level (0.0 fully transparent, 1.0 fully opaque)
+    depthTest: false
 });
 
 
@@ -194,8 +196,8 @@ function createParallelLines(radius, segments) {
 }
 
 // Create the grid lines
-createMeridianLines(radius, segments);
-createParallelLines(radius, segments);
+//createMeridianLines(radius, segments);
+//createParallelLines(radius, segments);
 
 // Create star points
 const starSprite = new THREE.TextureLoader().load('assets/disc.png');
@@ -205,13 +207,25 @@ const pointsMaterial = new THREE.PointsMaterial({
     sizeAttenuation: true,
     map: starSprite,
     transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthTest: false,
-    size: 1
+    opacity: 1,
+    blending: THREE.NormalBlending,
+    depthTest: true,
+    size: 1,
+    alphaTest: 0.1
 });
+
 const pointsGeometry = new THREE.BufferGeometry();
 const points = new THREE.Points(pointsGeometry, pointsMaterial);
 scene.add(points);
+
+// create black render distance sphere
+const sphereGeometry = new THREE.SphereGeometry(R0, 32, 32);
+const sphereMaterial = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    side: THREE.BackSide, 
+})
+const blackSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+scene.add(blackSphere);
 
 // Raycaster and mouse vector
 const raycaster = new THREE.Raycaster();
@@ -232,12 +246,12 @@ function addStarBatch(starData) {
     starData.forEach(star => {
         // Star magnitude / size
         const magnitude = star.mag;
-        const x = star.x;
-        const y = star.y;
+        const x = -1* star.y;
+        const y = star.x;
         const z = star.z;
         const dist = Math.sqrt(x**2 + y**2 + z**2);
         const mult = R0 * Math.exp(r_fact * magnitude);
-        const dfact = magnitude > 0 ? Math.exp(-0.1 * magnitude) : 1;
+        const dfact = magnitude > 0 ? Math.exp(-0.01 * magnitude) : 1;
         const newID = ++highestID;
 
         // Star position (x, y, z)
@@ -424,6 +438,14 @@ async function initialize() {
 }
 
 
+function updateSphereSize() {
+  // You can tie maxRenderDistance to the FOV for a smoother zoom effect
+  const fov = camera.fov;
+  maxRenderDistance = 100 / fov; // Example: Inverse relationship between FOV and max distance
+  blackSphere.scale.set(maxRenderDistance, maxRenderDistance, maxRenderDistance);
+  console.log(maxRenderDistance);
+}
+
 function onMouseWheel(event) {
     camera.fov += event.deltaY * ZOOM_SPEED;
     camera.fov = Math.max(Math.min(camera.fov, 80), 1);
@@ -505,6 +527,10 @@ window.addEventListener('resize', onWindowResize);
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
+
+    // Update max render distance based on camera FOV
+    updateSphereSize();
+
     composer.render();
 }
 animate();
