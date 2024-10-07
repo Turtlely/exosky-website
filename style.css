@@ -9,7 +9,7 @@ body {
 }
 
 .left-pane {
-    width: 300px;
+    width: 350px;
     background-color: #0d1b2a; /*#001A26;*/
     color: white;
     padding: 20px;
@@ -18,10 +18,20 @@ body {
     overflow-y: auto;
     position: relative;
     border-right: 1px solid #415a77; /* Add a thin white border to the right */
-    align-items: center; /* Center horizontally */
+    align-items: flex-start; /* Align all items to the left */
     display: flex;
     flex-direction: column; /* Arrange child elements vertically */
-    align-items: center; /* Center child elements horizontally */
+    overflow-x: hidden;
+}
+
+.top-left-pane {
+    display: flex;
+    flex-direction: column;  /* Ensures the content stays in a column layout */
+    justify-content: center; /* Center vertically */
+    align-items: center;     /* Center horizontally */
+    text-align: center;      /* Center text for h1 and labels */
+    padding-left: 10%;
+    padding-bottom: 10px;
 }
 
 .left-pane input {
@@ -91,7 +101,7 @@ main {
 }
 
 .dropdown {
-    width: 80%;
+    width:80%;
     position: relative;
     display: inline-block;
     margin-top: 5px;
@@ -148,7 +158,7 @@ input:focus {
 .modal {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  z-index: 5; /* Sit on top */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
@@ -201,5 +211,129 @@ input:focus {
 }
 
 .loading-content {
+   text-align: center;
+}
+
+/* Style for the top-bar */
+.top-bar {
+    background-color: #0d1b2a80; /* Grey with 70% opacity */
+    border-bottom: 1px solid #415a77; /* Add a thin white border to the right */
+    padding: 10px;
+    padding-left: 20px;
+    align-items: cent;
+    justify-content: right;
+    gap: 15px;
+    font-family: DejaVu Sans Mono, monospace; /* Match font style */
+    height: 50px;
+    width: 100%;
+    display: flex;
+    z-index: 3;
+}
+
+.dropdown {
+    /*position: relative;*/ /* Position relative for dropdown */
+    width: 500; /* Set width */
+    z-index: 3;
+}
+
+.dropdown-button {
+    /*width: 30%;*/ /* Full width */
+    padding: 10px; /* Padding */
+    margin-bottom: 5px;
+    background-color: #415a77; /* Button background color */
+    color: white; /* Button text color */
+    border: none; /* Remove border */
+    border-radius: 4px; /* Rounded corners */
+    font-family: DejaVu Sans Mono, monospace; /* Font style */
+    cursor: pointer; /* Change cursor to pointer */
+    z-index: 3;
+}
+
+/* White border on hover */
+.dropdown-button:hover {
+    outline: 2px solid #feedcf; /* Change the color to your preferred choice */
+    outline-offset: 2px; /* Adjust the space between the outline and the input border */
+}
+
+.dropdown-content {
+    display: none; /* Hidden by default */
+    position: absolute; /* Absolute positioning for dropdown */
+    background-color: #0d1b2a; /* Dropdown background color */
+    min-width: 30%; /* Same width as button */
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); /* Shadow */
+    z-index: 3; /* Ensure it appears above other content */
+    border-radius: 4px; /* Rounded corners */
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: white; /* Link text color */
+    padding: 10px; /* Padding */
+    text-decoration: none; /* No underline */
+    display: block; /* Block display for links */
+}
+
+/* Change color of links on hover */
+.dropdown-content a:hover {
+    background-color: #415a77; /* Hover color */
+}
+
+/* Show dropdown when active */
+.show {
+    display: block; /* Display the dropdown */
+}
+
+.starmodal {
+    position: absolute;
+    padding: 10px;
+    top: 10px;
+    width: 500px;
+    float:left;
+
+    z-index: 1; /* Ensure it appears above other content */
+    display: none; /* Hidden by default */
+}
+
+.educational-resources {
+    margin-top: 40px; /* Adds space between the main content and this section */
+    padding: 20px;
+    background-color: #0d1b2a; /* Match with your left-pane background */
+    border-top: 1px solid #415a77; /* Optional border to separate the section */
+    color: white;
+}
+
+.educational-resources h2 {
+    text-align: center; /* Center the heading */
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.educational-resources ul {
+    list-style-type: none; /* Remove default bullet points */
+    padding: 0;
     text-align: center;
+}
+
+.educational-resources li {
+    margin: 5px 0; /* Add space between each link */
+}
+
+.educational-resources a {
+    color: #84a9ac; /* Custom link color */
+    text-decoration: none; /* Remove underline */
+}
+
+.educational-resources a:hover {
+    text-decoration: underline; /* Add underline on hover */
+}
+
+.crop {
+    display: flex;
+    width: 100%;
+    height: 1000px;
+    justify-content: center;
+    align-items: center;
+}
+.crop img {
+    /*align-items: center;*/
 }
