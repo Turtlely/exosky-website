@@ -227,9 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(inputValue);
 
 
+            //fetch(`http://0.0.0.0:8080/exo_data/${inputValue}`) 
 
-            //fetch(`https://api.exosky.org/exo_data/${inputValue}`)
-            fetch(`http://0.0.0.0:8080/exo_data/${inputValue}`) 
+            fetch(`https://api.exosky.org/exo_data/${inputValue}`)
                .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
