@@ -226,55 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Send the job request, and save the returned job ID
             console.log(inputValue);
 
-
-            //fetch(`http://0.0.0.0:8080/exo_data/${inputValue}`) 
-
-            fetch(`https://api.exosky.org/exo_data/${inputValue}`)
-               .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(data)
-                    // Display the modal
-                    // Update the content of the modal
-                    const RA = parseFloat(data['RA']).toFixed(2); // Round to 2 decimal places
-                    const DEC = parseFloat(data['DEC']).toFixed(2); // Round to 2 decimal places
-                    const DIST = Math.round(data['DIST']); // Round to nearest integer
-                    const PLMASS = parseFloat(data['PLMASS']).toFixed(2); // Round to 2 decimal places
-                    const PLORBPER = Math.round(data['PLORBPER']); // Round to nearest integer
-                    const HOSTNAME = data['HOSTNAME'];
-                    const TEMP = Math.round(data['TEMP']); // Round to nearest integer
-                    const HOSTMASS = parseFloat(data['HOSTMASS']).toFixed(2); // Round to 2 decimal places
-                    const MAG = parseFloat(data['MAG']).toFixed(2); // Round to 2 decimal places
-                    const IMAGE = data['IMAGE'];
-
-                    const imgElement = document.getElementById('galactic-map');
-                    imgElement.src = `data:image/png;base64,${IMAGE}`;
-
-                    document.getElementById('exoplanet-ra').textContent = RA + " deg";
-                    document.getElementById('exoplanet-dec').textContent = DEC + " deg"; // Updated
-                    document.getElementById('exoplanet-distance').textContent = DIST + " pc"; // Updated
-                    //document.getElementById('exoplanet-discovery').textContent = data.discoveryMethod;
-                    //document.getElementById('exoplanet-year').textContent = data.yearDiscovered;
-                    document.getElementById('exoplanet-mass').textContent = PLMASS + " Earth Masses"; // Updated
-                    document.getElementById('exoplanet-period').textContent = PLORBPER + " days"; // Updated
-                    //document.getElementById('exoplanet-habitable').textContent = data.habitable ? 'Yes' : 'No';
-                    document.getElementById('stellar-name').textContent = HOSTNAME; // Updated
-                    document.getElementById('stellar-temp').textContent = TEMP + "K"; // Updated
-                    document.getElementById('stellar-mass').textContent = HOSTMASS + " Solar Masses"; // Updated
-                    //document.getElementById('stellar-type').textContent = data.type;
-                    document.getElementById('stellar-mag').textContent = MAG; // Updated
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                });
-
-
-
-
             jobId = await submitJob(MAG_CUTOFF, exoplanetPosition, inputValue);
             console.log(jobId);
             // Ensure job ID is not null
@@ -298,9 +249,57 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Disable the button
             button.disabled = true;
-            
-            console.log('Job ID:', jobId);
             deleteAllStars();
+            
+            fetch(`https://api.exosky.org/exo_data/${inputValue}`)
+               .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data)
+                    // Display the modal
+                    // Update the content of the modal
+                    const DM = data['DM'];
+                    const YD = data['YD'];
+                    const HBT = data['HBT'];
+                    const RA = data['RA']; // Round to 2 decimal places
+                    const DEC = data['DEC']; // Round to 2 decimal places
+                    const DIST = data['DIST']; // Round to nearest integer
+                    const PLMASS = data['PLMASS']; // Round to 2 decimal places
+                    const PLORBPER = data['PLORBPER']; // Round to nearest integer
+                    const HOSTNAME = data['HOSTNAME'];
+                    const TEMP = data['TEMP']; // Round to nearest integer
+                    const HOSTMASS = data['HOSTMASS']; // Round to 2 decimal places
+                    const TYPE = data['TYPE'];
+                    const MAG = data['MAG']; // Round to 2 decimal places
+                    const IMAGE = data['IMAGE'];
+
+                    const imgElement = document.getElementById('galactic-map');
+                    imgElement.src = `data:image/png;base64,${IMAGE}`;
+
+                    document.getElementById('exoplanet-discovery').textContent = DM;
+                    document.getElementById('exoplanet-year').textContent = YD;
+                    document.getElementById('exoplanet-habitable').textContent = HBT;
+                    document.getElementById('exoplanet-ra').textContent = RA + " deg";
+                    document.getElementById('exoplanet-dec').textContent = DEC + " deg"; // Updated
+                    document.getElementById('exoplanet-distance').textContent = DIST + " pc"; // Updated
+                    document.getElementById('exoplanet-mass').textContent = PLMASS + " Earth Masses"; // Updated
+                    document.getElementById('exoplanet-period').textContent = PLORBPER + " days"; // Updated
+                    document.getElementById('stellar-name').textContent = HOSTNAME; // Updated
+                    document.getElementById('stellar-temp').textContent = TEMP + "K"; // Updated
+                    document.getElementById('stellar-mass').textContent = HOSTMASS + " Solar Masses"; // Updated
+                    document.getElementById('stellar-type').textContent = TYPE;
+                    document.getElementById('stellar-mag').textContent = MAG; // Updated
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+
+            console.log('Job ID:', jobId);
+
             // Poll for job completion using setTimeout for async handling
             async function pollJobStatus() {
                 try {
@@ -840,14 +839,18 @@ function selectPoints(multiSelect) {
     }
 }
 
-
-
-
 function onMouseWheel(event) {
-    camera.fov += event.deltaY * ZOOM_SPEED;
-    camera.fov = Math.max(Math.min(camera.fov, 80), 1);
-    camera.updateProjectionMatrix();
+    // Check if the event target or its parent has the class 'left-pane'
+    if (!event.target.closest('.left-pane')) {
+        // Adjust FOV
+        camera.fov += event.deltaY * ZOOM_SPEED;
+        camera.fov = Math.max(Math.min(camera.fov, 80), 1);
+        camera.updateProjectionMatrix();
+    }
 }
+
+
+
 
 function onMouseDown(event) {
     isDragging = true;
